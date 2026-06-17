@@ -32,14 +32,14 @@ spring:
     locations: classpath:db/migration
   mail:
     host: smtp.gmail.com
-    port: 465
-    username: hostelconnectgh5@gmail.com
-    password: "jkze canx kwqr oxtf"
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:hostelconnectgh5@gmail.com}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
           auth: true
-          ssl:
+          starttls:
             enable: true
   h2:
     console:
