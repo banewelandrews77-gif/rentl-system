@@ -46,13 +46,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**").disable())
                 .cors(cors -> cors.configurationSource(request -> {
                     var config = new org.springframework.web.cors.CorsConfiguration();
-                    config.setAllowedOrigins(java.util.List.of(
-                        "http://localhost:3000", 
-                        "http://localhost:3001", 
-                        "http://127.0.0.1:3000", 
-                        "http://127.0.0.1:3001",
-                        "http://[::1]:3000",
-                        "http://[::1]:3001"
+                    config.setAllowedOriginPatterns(java.util.List.of(
+                        "http://localhost:[*]", 
+                        "http://127.0.0.1:[*]", 
+                        "http://[::1]:[*]",
+                        "https://*.vercel.app",
+                        "https://*.onrender.com"
                     ));
                     config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                     config.setAllowedHeaders(java.util.List.of(
