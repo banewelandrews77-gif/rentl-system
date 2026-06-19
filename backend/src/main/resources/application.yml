@@ -58,7 +58,7 @@ app:
     max-attempts: 5
     lockout-minutes: 15
   frontend:
-    url: ${FRONTEND_URL:http://localhost:3000}
+    url: ${FRONTEND_URL:https://rentl-system.vercel.app}
   admin:
     email: ${ADMIN_EMAIL:hostelconnectgh5@gmail.com}
     password: ${ADMIN_PASSWORD:Hostelconnect@1}
