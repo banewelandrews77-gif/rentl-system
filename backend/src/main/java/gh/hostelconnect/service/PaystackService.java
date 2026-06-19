@@ -25,11 +25,14 @@ public class PaystackService {
     @Value("${paystack.secret-key:sk_test_placeholder}")
     private String secretKey;
 
+    @Value("${app.frontend.url:https://rentl-system.vercel.app}")
+    private String frontendUrl;
+
     private static final String PAYSTACK_INITIALIZE_URL = "https://api.paystack.co/transaction/initialize";
     private static final String PAYSTACK_VERIFY_URL = "https://api.paystack.co/transaction/verify/";
 
     public InitializePaymentResponse initializeTransaction(String email, BigDecimal amount, String reference) {
-        return initializeTransaction(email, amount, reference, "http://localhost:3000/payment/callback", null);
+        return initializeTransaction(email, amount, reference, frontendUrl + "/payment/callback", null);
     }
 
     public InitializePaymentResponse initializeTransaction(String email, BigDecimal amount, String reference,

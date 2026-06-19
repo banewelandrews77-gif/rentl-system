@@ -5,13 +5,11 @@ import gh.hostelconnect.domain.User;
 import gh.hostelconnect.repository.AgentProfileRepository;
 import gh.hostelconnect.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import gh.hostelconnect.dto.agent.AgentProfileResponse;
 import gh.hostelconnect.dto.reservation.InitializePaymentResponse;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
@@ -27,6 +25,9 @@ public class AgentProfileService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final PaystackService paystackService;
+
+    @Value("${app.frontend.url:https://rentl-system.vercel.app}")
+    private String frontendUrl;
 
     public AgentProfileResponse getCurrentAgentProfile(UUID userId) {
         AgentProfile profile = agentProfileRepository.findByUserId(userId)
@@ -76,7 +77,7 @@ public class AgentProfileService {
 
         // 50 GHS for one academic year
         BigDecimal amount = new BigDecimal("50.00");
-        String callbackUrl = "http://localhost:3000/dashboard/agent/subscription/callback";
+        String callbackUrl = frontendUrl + "/dashboard/agent/subscription/callback";
 
         return paystackService.initializeTransaction(user.getEmail(), amount, reference, callbackUrl, user.getPhoneNumber());
     }

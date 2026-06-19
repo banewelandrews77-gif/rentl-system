@@ -14,6 +14,7 @@ import gh.hostelconnect.repository.RoomTypeRepository;
 import gh.hostelconnect.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,9 @@ public class ReservationService {
     private final RoomTypeRepository roomTypeRepository;
     private final PaystackService paystackService;
     private final ReceiptService receiptService;
+
+    @Value("${app.frontend.url:https://rentl-system.vercel.app}")
+    private String frontendUrl;
 
     @Transactional
     public ReservationResponse createReservation(UUID customerId, CreateReservationRequest request) {
@@ -97,7 +101,7 @@ public class ReservationService {
         reservationRepository.save(reservation);
 
         return paystackService.initializeTransaction(reservation.getCustomer().getEmail(), reservation.getAmountPaid(),
-                reference, "http://localhost:3000/payment/callback", reservation.getCustomer().getPhoneNumber());
+                reference, frontendUrl + "/payment/callback", reservation.getCustomer().getPhoneNumber());
     }
 
     @Transactional
