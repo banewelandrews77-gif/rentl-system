@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 
+// Trigger redeploy to run seed runner on new registered agent
 @Component
 @RequiredArgsConstructor
 @Slf4j
