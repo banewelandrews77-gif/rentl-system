@@ -76,28 +76,33 @@ public class HostelConnectApplication {
     private static String convertDatabaseUrl(String dbUrl) {
         try {
             String cleanUrl = dbUrl;
-            if (cleanUrl.startsWith("postgres://")) {
+            if (cleanUrl.startsWith("jdbc:postgresql://")) {
+                cleanUrl = cleanUrl.substring("jdbc:postgresql://".length());
+            } else if (cleanUrl.startsWith("jdbc:postgres://")) {
+                cleanUrl = cleanUrl.substring("jdbc:postgres://".length());
+            } else if (cleanUrl.startsWith("postgres://")) {
                 cleanUrl = cleanUrl.substring("postgres://".length());
             } else if (cleanUrl.startsWith("postgresql://")) {
                 cleanUrl = cleanUrl.substring("postgresql://".length());
             }
             
-            // Find the last '@' which separates credentials from host
+            String username = null;
+            String password = null;
+            String hostAndDb = cleanUrl;
+            
+            // Check if credentials are embedded in the URI
             int lastAtIndex = cleanUrl.lastIndexOf('@');
-            if (lastAtIndex == -1) {
-                throw new IllegalArgumentException("Invalid connection URI: missing '@'");
-            }
-            
-            String credentials = cleanUrl.substring(0, lastAtIndex);
-            String hostAndDb = cleanUrl.substring(lastAtIndex + 1);
-            
-            // Parse credentials (username:password)
-            String username = credentials;
-            String password = "";
-            int firstColonIndex = credentials.indexOf(':');
-            if (firstColonIndex != -1) {
-                username = credentials.substring(0, firstColonIndex);
-                password = credentials.substring(firstColonIndex + 1);
+            if (lastAtIndex != -1) {
+                String credentials = cleanUrl.substring(0, lastAtIndex);
+                hostAndDb = cleanUrl.substring(lastAtIndex + 1);
+                
+                int firstColonIndex = credentials.indexOf(':');
+                if (firstColonIndex != -1) {
+                    username = credentials.substring(0, firstColonIndex);
+                    password = credentials.substring(firstColonIndex + 1);
+                } else {
+                    username = credentials;
+                }
             }
             
             // Parse host and database
@@ -123,6 +128,9 @@ public class HostelConnectApplication {
                 database = database.substring(0, database.indexOf('?'));
             }
             
+            // Clean host of any copy-paste placeholder brackets if present
+            host = host.replace("<", "").replace(">", "");
+            
             parsedHost = host;
             try {
                 parsedPort = Integer.parseInt(port);
@@ -131,8 +139,13 @@ public class HostelConnectApplication {
             }
             
             String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + "/" + database;
-            jdbcUrl += "?user=" + username + "&password=" + password;
-            jdbcUrl += "&sslmode=require";
+            
+            // Append parameters
+            if (username != null && password != null) {
+                jdbcUrl += "?user=" + username + "&password=" + password + "&sslmode=require";
+            } else {
+                jdbcUrl += "?sslmode=require";
+            }
             
             return jdbcUrl;
         } catch (Exception e) {
