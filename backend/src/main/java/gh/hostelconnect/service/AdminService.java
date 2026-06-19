@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -123,5 +125,21 @@ public class AdminService {
         }
         
         userRepository.delete(user);
+    }
+
+    @Transactional
+    public void manuallyActivateSubscription(UUID agentProfileId) {
+        AgentProfile profile = agentProfileRepository.findById(agentProfileId)
+                .orElseThrow(() -> new IllegalArgumentException("Agent profile not found"));
+
+        Instant currentUntil = profile.getSubscriptionValidUntil();
+        Instant newUntil;
+        if (currentUntil != null && currentUntil.isAfter(Instant.now())) {
+            newUntil = currentUntil.plus(365, ChronoUnit.DAYS);
+        } else {
+            newUntil = Instant.now().plus(365, ChronoUnit.DAYS);
+        }
+        profile.setSubscriptionValidUntil(newUntil);
+        agentProfileRepository.save(profile);
     }
 }

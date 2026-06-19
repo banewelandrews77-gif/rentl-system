@@ -99,4 +99,10 @@ public class AdminController {
             @Valid @RequestBody RespondTicketRequest request) {
         return ResponseEntity.ok(supportTicketService.respondToTicket(id, request));
     }
+
+    @PostMapping("/agents/{id}/activate-subscription")
+    public ResponseEntity<Map<String, String>> manuallyActivateSubscription(@PathVariable UUID id) {
+        adminService.manuallyActivateSubscription(id);
+        return ResponseEntity.ok(Map.of("message", "Subscription activated successfully for 1 year"));
+    }
 }
