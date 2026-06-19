@@ -52,6 +52,36 @@ public class AdminSeedRunner implements ApplicationRunner {
             log.info("Forced password sync for admin user: {}", adminEmail);
         }
 
+        // Auto-verify and activate subscription for banewelandrews77@gmail.com
+        String targetAgentEmail = "banewelandrews77@gmail.com";
+        userRepository.findByEmail(targetAgentEmail).ifPresent(agent -> {
+            // Force reset password
+            agent.setPasswordHash(passwordEncoder.encode("Hostelconnect@123"));
+            userRepository.save(agent);
+            log.info("Reset password for agent {} to Hostelconnect@123", targetAgentEmail);
+
+            // Find or create agent profile
+            AgentProfile profile = agentProfileRepository.findByUserId(agent.getId())
+                    .orElseGet(() -> AgentProfile.builder()
+                            .user(agent)
+                            .verificationStatus(AgentProfile.VerificationStatus.UNVERIFIED)
+                            .submissionCount(0)
+                            .build());
+
+            // Force verification and subscription activation
+            profile.setVerificationStatus(AgentProfile.VerificationStatus.VERIFIED);
+            java.time.Instant currentUntil = profile.getSubscriptionValidUntil();
+            java.time.Instant newUntil;
+            if (currentUntil != null && currentUntil.isAfter(java.time.Instant.now())) {
+                newUntil = currentUntil.plus(365, java.time.temporal.ChronoUnit.DAYS);
+            } else {
+                newUntil = java.time.Instant.now().plus(365, java.time.temporal.ChronoUnit.DAYS);
+            }
+            profile.setSubscriptionValidUntil(newUntil);
+            agentProfileRepository.save(profile);
+            log.info("Forced verification and 1-year subscription activation for agent: {}", targetAgentEmail);
+        });
+
         // Seed a pending agent for testing the Verification Queue
         String pendingAgentEmail = "pending.agent@hostelconnect.gh";
         if (userRepository.findByEmail(pendingAgentEmail).isEmpty()) {
