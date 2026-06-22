@@ -101,6 +101,9 @@ export const authApi = {
   verifyEmail: (body: { email: string; otp: string }) =>
     api<{ message: string }>('/auth/verify-email', { method: 'POST', body: JSON.stringify(body) }),
 
+  resendVerification: (email: string) =>
+    api<{ message: string }>('/auth/resend-verification', { method: 'POST', body: JSON.stringify({ email }) }),
+
   forgotPassword: (body: { email: string }) =>
     api<{ message: string }>('/auth/forgot-password', { method: 'POST', body: JSON.stringify(body) }),
 

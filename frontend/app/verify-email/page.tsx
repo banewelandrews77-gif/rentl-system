@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -12,18 +12,49 @@ function VerifyEmailForm() {
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const { verifyEmail } = useAuth();
+  const [resending, setResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const { verifyEmail, resendVerification } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    setResendMessage('');
     try {
       await verifyEmail(email, otp);
       setSuccess(true);
       setTimeout(() => router.push('/login'), 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Verification failed');
+    }
+  }
+
+  async function handleResend() {
+    if (!email) {
+      setError('Please enter your email to resend the code.');
+      return;
+    }
+    setError('');
+    setResendMessage('');
+    setResending(true);
+    try {
+      await resendVerification(email);
+      setResendMessage('Verification code resent successfully to your email and phone.');
+      setResendCooldown(60);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to resend code');
+    } finally {
+      setResending(false);
     }
   }
 
@@ -40,6 +71,11 @@ function VerifyEmailForm() {
       {error && (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-700" role="alert">
           {error}
+        </div>
+      )}
+      {resendMessage && (
+        <div className="rounded-md bg-green-50 p-3 text-sm text-green-700" role="alert">
+          {resendMessage}
         </div>
       )}
       <div>
@@ -73,6 +109,21 @@ function VerifyEmailForm() {
       >
         Verify email
       </button>
+      <div className="flex items-center justify-between pt-2">
+        <span className="text-sm text-stone-500">Didn't receive the code?</span>
+        <button
+          type="button"
+          disabled={resendCooldown > 0 || resending}
+          onClick={handleResend}
+          className={`text-sm font-medium transition-colors ${
+            resendCooldown > 0 || resending
+              ? 'text-stone-400 cursor-not-allowed'
+              : 'text-amber-700 hover:text-amber-800 hover:underline'
+          }`}
+        >
+          {resending ? 'Sending...' : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend code'}
+        </button>
+      </div>
     </form>
   );
 }

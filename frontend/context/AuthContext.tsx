@@ -26,6 +26,7 @@ type AuthContextValue = AuthState & {
   registerCustomer: (data: Parameters<typeof authApi.registerCustomer>[0]) => Promise<AuthResponse>;
   registerAgent: (data: Parameters<typeof authApi.registerAgent>[0]) => Promise<AuthResponse>;
   verifyEmail: (email: string, otp: string) => Promise<void>;
+  resendVerification: (email: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (data: { email: string; otp: string; newPassword: string; confirmPassword: string }) => Promise<void>;
   logout: () => void;
@@ -110,6 +111,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await authApi.verifyEmail({ email, otp });
   }, []);
 
+  const resendVerification = useCallback(async (email: string) => {
+    await authApi.resendVerification(email);
+  }, []);
+
   const forgotPassword = useCallback(async (email: string) => {
     await authApi.forgotPassword({ email });
   }, []);
@@ -124,6 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     registerCustomer,
     registerAgent,
     verifyEmail,
+    resendVerification,
     forgotPassword,
     resetPassword,
     logout,
