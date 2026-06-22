@@ -22,6 +22,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final OtpService otpService;
     private final EmailService emailService;
+    private final SmsService smsService;
 
     @Transactional
     public AuthResponse registerCustomer(RegisterCustomerRequest req) {
@@ -43,6 +44,9 @@ public class AuthService {
         user = userRepository.save(user);
         String otp = otpService.generateAndStore(user.getEmail(), OtpService.OtpType.EMAIL_VERIFY);
         emailService.sendVerificationOtp(user.getEmail(), otp);
+        if (user.getPhoneNumber() != null && !user.getPhoneNumber().isBlank()) {
+            smsService.sendVerificationOtp(user.getPhoneNumber(), otp);
+        }
         return buildAuthResponse(user, null);
     }
 
@@ -85,6 +89,9 @@ public class AuthService {
         if (!user.isEmailVerified()) {
             String otp = otpService.generateAndStore(user.getEmail(), OtpService.OtpType.EMAIL_VERIFY);
             emailService.sendVerificationOtp(user.getEmail(), otp);
+            if (user.getPhoneNumber() != null && !user.getPhoneNumber().isBlank()) {
+                smsService.sendVerificationOtp(user.getPhoneNumber(), otp);
+            }
         }
         return buildAuthResponse(user, profile);
     }
@@ -112,6 +119,9 @@ public class AuthService {
         if (!user.isEmailVerified()) {
             String newOtp = otpService.generateAndStore(user.getEmail(), OtpService.OtpType.EMAIL_VERIFY);
             emailService.sendVerificationOtp(user.getEmail(), newOtp);
+            if (user.getPhoneNumber() != null && !user.getPhoneNumber().isBlank()) {
+                smsService.sendVerificationOtp(user.getPhoneNumber(), newOtp);
+            }
             throw new IllegalStateException(
                     "Please verify your email before logging in. A new verification code has been sent.");
         }
@@ -149,6 +159,9 @@ public class AuthService {
         }
         String otp = otpService.generateAndStore(em, OtpService.OtpType.EMAIL_VERIFY);
         emailService.sendVerificationOtp(em, otp);
+        if (user.getPhoneNumber() != null && !user.getPhoneNumber().isBlank()) {
+            smsService.sendVerificationOtp(user.getPhoneNumber(), otp);
+        }
     }
 
     public void forgotPassword(ForgotPasswordRequest req) {
@@ -156,6 +169,9 @@ public class AuthService {
         userRepository.findByEmail(email).ifPresent(user -> {
             String otp = otpService.generateAndStore(email, OtpService.OtpType.PASSWORD_RESET);
             emailService.sendPasswordResetOtp(email, otp);
+            if (user.getPhoneNumber() != null && !user.getPhoneNumber().isBlank()) {
+                smsService.sendPasswordResetOtp(user.getPhoneNumber(), otp);
+            }
         });
         // Always return success to avoid email enumeration
     }

@@ -75,3 +75,7 @@ springdoc:
 
 server:
   port: ${PORT:8081}
+
+arkesel:
+  api-key: ${ARKESEL_API_KEY:}
+  sender-id: ${ARKESEL_SENDER_ID:HostelConn}
