@@ -4,6 +4,7 @@ import gh.hostelconnect.domain.AgentProfile;
 import gh.hostelconnect.domain.User;
 import gh.hostelconnect.repository.AgentProfileRepository;
 import gh.hostelconnect.repository.UserRepository;
+import gh.hostelconnect.repository.RoomTypeRepository;
 import gh.hostelconnect.service.OtpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
@@ -23,6 +24,7 @@ public class AdminSeedRunner implements ApplicationRunner {
     private final PasswordEncoder passwordEncoder;
     private final AppProperties appProperties;
     private final OtpService otpService;
+    private final RoomTypeRepository roomTypeRepository;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -112,5 +114,14 @@ public class AdminSeedRunner implements ApplicationRunner {
 
             agentProfileRepository.save(profile);
         }
+
+        // Fix room capacity typo
+        roomTypeRepository.findAll().forEach(room -> {
+            if ("2 in a room".equalsIgnoreCase(room.getName()) && room.getCapacity() == 3) {
+                room.setCapacity(2);
+                roomTypeRepository.save(room);
+                log.info("[DATABASE CORRECTION] Corrected capacity for room ID {} from 3 to 2.", room.getId());
+            }
+        });
     }
 }
