@@ -7,6 +7,12 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
@@ -15,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -23,6 +30,11 @@ public class FileStorageService {
 
     @Value("${app.upload.dir:uploads/documents}")
     private String uploadDir;
+
+    @Value("${imgbb.api-key:}")
+    private String imgbbApiKey;
+
+    private final RestTemplate restTemplate = new RestTemplate();
 
     private Path fileStorageLocation;
 
@@ -37,6 +49,14 @@ public class FileStorageService {
     }
 
     public String storeFile(MultipartFile file) {
+        if (imgbbApiKey != null && !imgbbApiKey.isBlank()) {
+            try {
+                return uploadToImgbb(file);
+            } catch (Exception e) {
+                log.error("ImgBB upload failed, falling back to local storage", e);
+            }
+        }
+
         String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
 
         try {
@@ -61,6 +81,36 @@ public class FileStorageService {
             return newFileName;
         } catch (IOException ex) {
             throw new RuntimeException("Could not store file " + originalFileName + ". Please try again!", ex);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private String uploadToImgbb(MultipartFile file) {
+        try {
+            String url = "https://api.imgbb.com/1/upload";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("key", imgbbApiKey);
+            body.add("image", file.getResource());
+
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+            Map<String, Object> response = restTemplate.postForObject(url, requestEntity, Map.class);
+            if (response != null && Boolean.TRUE.equals(response.get("success"))) {
+                Map<String, Object> data = (Map<String, Object>) response.get("data");
+                if (data != null) {
+                    String imageUrl = (String) data.get("url");
+                    log.info("Successfully uploaded image to ImgBB: {}", imageUrl);
+                    return imageUrl;
+                }
+            }
+            throw new RuntimeException("ImgBB response indicates failure or empty data: " + response);
+        } catch (Exception e) {
+            log.error("Failed to upload image to ImgBB: {}", e.getMessage());
+            throw new RuntimeException("Failed to upload image to ImgBB", e);
         }
     }
 

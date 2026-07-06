@@ -47,8 +47,8 @@ public class AgentProfileService {
         String ghanaCardName = fileStorageService.storeFile(ghanaCard);
         String facePhotoName = fileStorageService.storeFile(facePhoto);
 
-        String ghanaCardUri = "/api/files/" + ghanaCardName;
-        String facePhotoUri = "/api/files/" + facePhotoName;
+        String ghanaCardUri = ghanaCardName.startsWith("http") ? ghanaCardName : "/api/files/" + ghanaCardName;
+        String facePhotoUri = facePhotoName.startsWith("http") ? facePhotoName : "/api/files/" + facePhotoName;
 
         profile.setGhanaCardUrl(ghanaCardUri);
         profile.setFacePhotoUrl(facePhotoUri);

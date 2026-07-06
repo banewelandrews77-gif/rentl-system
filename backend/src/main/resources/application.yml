@@ -79,3 +79,6 @@ server:
 arkesel:
   api-key: ${ARKESEL_API_KEY:}
   sender-id: ${ARKESEL_SENDER_ID:HostelConn}
+
+imgbb:
+  api-key: ${IMGBB_API_KEY:}

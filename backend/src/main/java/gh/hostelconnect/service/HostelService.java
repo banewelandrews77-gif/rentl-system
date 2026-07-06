@@ -142,7 +142,7 @@ public class HostelService {
         Hostel hostel = getHostelForAgentOrThrow(userId, hostelId);
 
         String fileName = fileStorageService.storeFile(file);
-        String fileDownloadUri = "/api/files/" + fileName;
+        String fileDownloadUri = fileName.startsWith("http") ? fileName : "/api/files/" + fileName;
 
         // If this is set as primary, un-primary others
         if (isPrimary) {
@@ -181,7 +181,7 @@ public class HostelService {
         }
 
         String fileName = fileStorageService.storeFile(file);
-        String fileDownloadUri = "/api/files/" + fileName;
+        String fileDownloadUri = fileName.startsWith("http") ? fileName : "/api/files/" + fileName;
         
         roomType.setImageUrl(fileDownloadUri);
         roomTypeRepository.save(roomType);
