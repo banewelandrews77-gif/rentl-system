@@ -50,6 +50,11 @@ public class OtpService {
         store.delete(FAILED_LOGIN_PREFIX + email.toLowerCase());
     }
 
+    public void clearLockout(String email) {
+        store.delete(LOCKOUT_PREFIX + email.toLowerCase());
+        store.delete(FAILED_LOGIN_PREFIX + email.toLowerCase());
+    }
+
     public boolean isLockedOut(String email) {
         return store.hasKey(LOCKOUT_PREFIX + email.toLowerCase());
     }

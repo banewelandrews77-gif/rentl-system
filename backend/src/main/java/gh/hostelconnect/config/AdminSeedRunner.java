@@ -4,6 +4,7 @@ import gh.hostelconnect.domain.AgentProfile;
 import gh.hostelconnect.domain.User;
 import gh.hostelconnect.repository.AgentProfileRepository;
 import gh.hostelconnect.repository.UserRepository;
+import gh.hostelconnect.service.OtpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -21,6 +22,7 @@ public class AdminSeedRunner implements ApplicationRunner {
     private final AgentProfileRepository agentProfileRepository;
     private final PasswordEncoder passwordEncoder;
     private final AppProperties appProperties;
+    private final OtpService otpService;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -60,6 +62,10 @@ public class AdminSeedRunner implements ApplicationRunner {
             agent.setPasswordHash(passwordEncoder.encode("Hostelconnect@123"));
             userRepository.save(agent);
             log.info("Reset password for agent {} to Hostelconnect@123", targetAgentEmail);
+
+            // Clear lockout status
+            otpService.clearLockout(targetAgentEmail);
+            log.info("Cleared lockout for agent {}", targetAgentEmail);
 
             // Find or create agent profile
             AgentProfile profile = agentProfileRepository.findByUserId(agent.getId())
