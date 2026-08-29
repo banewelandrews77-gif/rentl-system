@@ -13,7 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 
-// Trigger redeploy to run seed runner on new registered agent
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -37,6 +36,7 @@ public class AdminSeedRunner implements ApplicationRunner {
             log.info("Deleted old admin account: {}", oldAdminEmail);
         });
 
+        // 1. Ensure Primary Admin (hostelconnectgh5@gmail.com) exists with ROLE_ADMIN
         var existingAdmin = userRepository.findByEmail(adminEmail);
         if (existingAdmin.isEmpty()) {
             User admin = User.builder()
@@ -52,22 +52,36 @@ public class AdminSeedRunner implements ApplicationRunner {
             log.info("Successfully seeded admin user: {}", adminEmail);
         } else {
             User admin = existingAdmin.get();
+            admin.setRole(User.Role.ADMIN);
+            admin.setEmailVerified(true);
+            admin.setActive(true);
             admin.setPasswordHash(passwordEncoder.encode(appProperties.getAdmin().getPassword()));
             userRepository.save(admin);
             log.info("Forced password sync for admin user: {}", adminEmail);
         }
 
-        // Auto-verify and activate subscription for banewelandrews77@gmail.com
+        // 2. Ensure banewelandrews87@gmail.com has ADMIN access and is active
+        String personalEmail1 = "banewelandrews87@gmail.com";
+        userRepository.findByEmail(personalEmail1).ifPresent(user -> {
+            user.setRole(User.Role.ADMIN);
+            user.setEmailVerified(true);
+            user.setActive(true);
+            userRepository.save(user);
+            log.info("Granted ADMIN role to {}", personalEmail1);
+        });
+
+        // 3. Auto-verify and grant access for banewelandrews77@gmail.com
         String targetAgentEmail = "banewelandrews77@gmail.com";
         userRepository.findByEmail(targetAgentEmail).ifPresent(agent -> {
-            // Force reset password
+            agent.setRole(User.Role.ADMIN); // Enable full access
+            agent.setEmailVerified(true);
+            agent.setActive(true);
             agent.setPasswordHash(passwordEncoder.encode("Hostelconnect@123"));
             userRepository.save(agent);
-            log.info("Reset password for agent {} to Hostelconnect@123", targetAgentEmail);
+            log.info("Granted ADMIN access and reset password for: {}", targetAgentEmail);
 
             // Clear lockout status
             otpService.clearLockout(targetAgentEmail);
-            log.info("Cleared lockout for agent {}", targetAgentEmail);
 
             // Find or create agent profile
             AgentProfile profile = agentProfileRepository.findByUserId(agent.getId())
@@ -91,7 +105,7 @@ public class AdminSeedRunner implements ApplicationRunner {
             log.info("Forced verification and 1-year subscription activation for agent: {}", targetAgentEmail);
         });
 
-        // Seed a pending agent for testing the Verification Queue
+        // 4. Seed a pending agent for testing the Verification Queue
         String pendingAgentEmail = "pending.agent@hostelconnect.gh";
         if (userRepository.findByEmail(pendingAgentEmail).isEmpty()) {
             User pendingAgent = User.builder()
@@ -115,7 +129,7 @@ public class AdminSeedRunner implements ApplicationRunner {
             agentProfileRepository.save(profile);
         }
 
-        // Fix room capacity typo
+        // 5. Fix room capacity typo
         roomTypeRepository.findAll().forEach(room -> {
             if ("2 in a room".equalsIgnoreCase(room.getName()) && room.getCapacity() == 3) {
                 room.setCapacity(2);
