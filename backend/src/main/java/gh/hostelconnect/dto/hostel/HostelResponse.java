@@ -35,6 +35,7 @@ public class HostelResponse {
         private String name;
         private int capacity;
         private BigDecimal pricePerYear;
+        private int totalAvailable;
         private int availableCount;
         private String imageUrl;
     }
@@ -71,6 +72,7 @@ public class HostelResponse {
                         .name(rt.getName())
                         .capacity(rt.getCapacity())
                         .pricePerYear(rt.getPricePerYear())
+                        .totalAvailable(rt.getTotalAvailable())
                         .availableCount(rt.getAvailableCount())
                         .imageUrl(rt.getImageUrl())
                         .build()).collect(Collectors.toList()))

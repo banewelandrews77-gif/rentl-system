@@ -1,11 +1,23 @@
 # Backend build artifacts
 backend/target/
 backend/uploads/
+backend/data/
+*.db
+
+# Local secrets and local profiles
+backend/src/main/resources/application-local.yml
+backend/src/main/resources/application-secret.yml
+*.local
+.env.local
 
 # Logs
 *.log
 backend/*.log
 frontend/*.log
+
+# Next.js
+frontend/.next/
+frontend/node_modules/
 
 # IDE settings
 .idea/

@@ -94,7 +94,7 @@ public class AdminService {
 
     @Transactional
     public void deleteHostel(UUID hostelId) {
-        hostelRepository.deleteById(hostelId);
+        hostelService.deleteHostel(null, true, hostelId);
     }
 
     @Transactional

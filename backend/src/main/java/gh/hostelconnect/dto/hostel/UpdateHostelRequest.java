@@ -14,7 +14,6 @@ public class UpdateHostelRequest {
     @NotBlank(message = "Name is required")
     private String name;
 
-    @NotBlank(message = "Description is required")
     private String description;
 
     @NotBlank(message = "Location is required")
