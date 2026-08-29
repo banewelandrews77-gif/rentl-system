@@ -16,7 +16,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/agents/inquiries")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('AGENT')")
+@PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
 public class AgentInquiryController {
 
     private final AgentInquiryService inquiryService;

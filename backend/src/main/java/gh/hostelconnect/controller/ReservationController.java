@@ -30,7 +30,7 @@ public class ReservationController {
     private final ReservationService reservationService;
 
     @PostMapping("/customers/reservations")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<ReservationResponse> createReservation(
             @Valid @RequestBody CreateReservationRequest request,
             Authentication authentication) {
@@ -39,14 +39,14 @@ public class ReservationController {
     }
 
     @GetMapping("/customers/reservations")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<List<ReservationResponse>> getMyReservations(Authentication authentication) {
         UUID customerId = UUID.fromString(authentication.getName());
         return ResponseEntity.ok(reservationService.getCustomerReservations(customerId));
     }
 
     @PostMapping("/customers/reservations/{id}/initialize-payment")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<InitializePaymentResponse> initializePayment(
             @PathVariable UUID id,
             Authentication authentication) {
@@ -55,7 +55,7 @@ public class ReservationController {
     }
 
     @GetMapping("/agents/hostels/{id}/reservations")
-    @PreAuthorize("hasRole('AGENT')")
+    @PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
     public ResponseEntity<List<ReservationResponse>> getHostelReservations(@PathVariable UUID id) {
         // Simple implementation, ideally checking if the agent actually owns this
         // hostel
@@ -63,7 +63,7 @@ public class ReservationController {
     }
 
     @GetMapping("/customers/reservations/{id}/invoice")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<InputStreamResource> downloadInvoice(@PathVariable UUID id, Authentication authentication) {
         log.info("Invoice download requested for reservation: {}", id);
         UUID customerId = UUID.fromString(authentication.getName());
@@ -86,7 +86,7 @@ public class ReservationController {
     }
 
     @PostMapping("/customers/reservations/verify")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<Map<String, String>> verifyPayment(@RequestBody Map<String, String> body) {
         String reference = body.get("reference");
         if (reference == null) {

@@ -21,7 +21,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/agents/hostels")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('AGENT')")
+@PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
 public class AgentHostelController {
 
     private final HostelService hostelService;

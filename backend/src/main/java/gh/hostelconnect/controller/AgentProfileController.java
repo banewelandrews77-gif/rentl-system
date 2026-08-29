@@ -20,7 +20,7 @@ public class AgentProfileController {
     private final AgentProfileService agentProfileService;
 
     @PostMapping("/document")
-    @PreAuthorize("hasRole('AGENT')")
+    @PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
     public ResponseEntity<Map<String, String>> uploadVerificationDocuments(
             @RequestParam("ghanaCard") MultipartFile ghanaCard,
             @RequestParam("facePhoto") MultipartFile facePhoto,
@@ -35,7 +35,7 @@ public class AgentProfileController {
     }
 
     @GetMapping("/me")
-    @PreAuthorize("hasRole('AGENT')")
+    @PreAuthorize("hasAnyRole('AGENT', 'ADMIN')")
     public ResponseEntity<AgentProfileResponse> getMyProfile(Authentication authentication) {
         UUID userId = UUID.fromString(authentication.getName());
         return ResponseEntity.ok(agentProfileService.getCurrentAgentProfile(userId));
