@@ -223,10 +223,12 @@ public class HostelService {
     @Transactional
     public List<HostelResponse> getAgentHostels(UUID userId) {
         reservationService.cleanupExpiredReservations();
-        AgentProfile agentProfile = agentProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Agent profile not found"));
+        var profileOpt = agentProfileRepository.findByUserId(userId);
+        if (profileOpt.isEmpty()) {
+            return List.of();
+        }
 
-        List<Hostel> hostels = hostelRepository.findByAgentId(agentProfile.getId());
+        List<Hostel> hostels = hostelRepository.findByAgentId(profileOpt.get().getId());
         return mapHostelsWithBulkReviews(hostels);
     }
 
@@ -282,7 +284,22 @@ public class HostelService {
 
     private AgentProfile getVerifiedAgentOrThrow(UUID userId) {
         AgentProfile profile = agentProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Agent profile not found"));
+                .orElseGet(() -> {
+                    User user = userRepository.findById(userId).orElseThrow();
+                    if (user.getRole() == User.Role.ADMIN) {
+                        return agentProfileRepository.save(AgentProfile.builder()
+                                .user(user)
+                                .verificationStatus(AgentProfile.VerificationStatus.VERIFIED)
+                                .subscriptionValidUntil(Instant.now().plus(365, ChronoUnit.DAYS))
+                                .submissionCount(0)
+                                .build());
+                    }
+                    throw new IllegalArgumentException("Agent profile not found");
+                });
+
+        if (profile.getUser().getRole() == User.Role.ADMIN) {
+            return profile;
+        }
 
         if (profile.getVerificationStatus() != AgentProfile.VerificationStatus.VERIFIED) {
             throw new IllegalStateException("Only verified agents can manage hostels");
