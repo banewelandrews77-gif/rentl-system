@@ -1,4 +1,4 @@
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api';
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://hostelconnect-live-api.onrender.com/api';
 
 export function getImageUrl(path: string | undefined | null): string {
   if (!path) return '';
@@ -7,7 +7,7 @@ export function getImageUrl(path: string | undefined | null): string {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   
   // Use API_BASE to determine the backend domain
-  let domain = 'http://localhost:8081';
+  let domain = 'https://hostelconnect-live-api.onrender.com';
   if (API_BASE.startsWith('http')) {
     domain = API_BASE.replace(/\/api\/?$/, '');
   }

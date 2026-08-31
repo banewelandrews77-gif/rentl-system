@@ -20,6 +20,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { Logo } from './Logo';
+import { API_BASE } from '@/lib/api';
 
 export function Navbar() {
   const { user, role, logout, ready } = useAuth();
@@ -54,7 +55,7 @@ export function Navbar() {
   useEffect(() => {
     const fetchLatest = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api'}/public/hostels`);
+        const res = await fetch(`${API_BASE}/public/hostels`);
         if (res.ok) {
           const data = await res.json();
           // Sort by latest (assuming ID or some logic, but let's just take the first 5)
