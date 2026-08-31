@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    default: local
   servlet:
     multipart:
       max-file-size: 50MB
@@ -6,9 +8,9 @@ spring:
   application:
     name: hostelconnect-backend
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/hostelconnect}
-    username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:postgres}
+    url: ${DATABASE_URL:jdbc:postgresql://ep-sweet-shadow-aysdotuo-pooler.c-5.us-east-2.aws.neon.tech:5432/neondb?sslmode=require}
+    username: ${DATABASE_USERNAME:neondb_owner}
+    password: ${DATABASE_PASSWORD:npg_E1gTHfo0Galc}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -23,6 +25,10 @@ spring:
         default_schema: public
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -58,7 +64,7 @@ app:
     max-attempts: 5
     lockout-minutes: 15
   frontend:
-    url: ${FRONTEND_URL:http://localhost:3000}
+    url: ${FRONTEND_URL:https://rentl-system.vercel.app}
   admin:
     email: ${ADMIN_EMAIL:hostelconnectgh5@gmail.com}
     password: ${ADMIN_PASSWORD:Hostelconnect@1}
